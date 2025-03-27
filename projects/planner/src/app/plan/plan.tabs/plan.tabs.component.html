@@ -12,7 +12,9 @@
         </mdb-tab>
         <mdb-tab>
             <ng-template mdbTabTitle>
-                <fa-icon [icon]="addIcon" class="p-0 m-0 fa-xl" (click)="addTab()"></fa-icon>
+                <div (click)="addTab()" style="padding:16px; margin:-16px">
+                    <fa-icon [icon]="addIcon" class="p-0 m-0 fa-xl"></fa-icon>
+                </div>
             </ng-template>
         </mdb-tab>
     </mdb-tabs>
