@@ -1,4 +1,4 @@
-# Dugong Gas planner
+# Mark Deco Planner
 
 This is a web based application, which allows **recreational** scuba divers to do their simple gas planning calculations. 
 Purpose of the application is to provide easy to use calculations and help scuba divers to learn diving theory and formulas.
