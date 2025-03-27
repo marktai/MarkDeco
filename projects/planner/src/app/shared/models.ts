@@ -54,6 +54,11 @@ export class Level {
         this.segment.duration = Time.toSeconds(newValue);
     }
 
+    public set startDepth(newValue: number) {
+        const meters = this.units.toMeters(newValue);
+        this.segment.startDepth = meters;
+    }
+
     public set endDepth(newValue: number) {
         const meters = this.units.toMeters(newValue);
         this.segment.endDepth = meters;

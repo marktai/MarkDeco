@@ -14,7 +14,7 @@ import { ReloadDispatcher } from './reloadDispatcher';
 
 @Injectable()
 export class DepthsService extends Streamed {
-    private _levels: Level[] = [];
+    private definedLevels: Level[] = [];
     private toxicity: GasToxicity;
     private plan = new Plan();
 
@@ -42,7 +42,7 @@ export class DepthsService extends Streamed {
     }
 
     public get levels(): Level[] {
-        return this._levels;
+        return this.definedLevels;
     }
 
     public get segments(): Segment[] {
@@ -110,7 +110,8 @@ export class DepthsService extends Streamed {
     }
 
     public removeSegment(level: Level): void {
-        this.plan.removeSegment(level.segment);
+        const options = this.optionsService.getOptions();
+        this.plan.removeSegment(level.segment, options.descentSpeed, options.ascentSpeed50perc);
         this.updateLevels();
         this.levelChanged();
     }
@@ -133,7 +134,7 @@ export class DepthsService extends Streamed {
     }
 
     public levelChanged(): void {
-        this.plan.fixDepths();
+        this.fixDepths();
         this.apply();
     }
 
@@ -144,6 +145,7 @@ export class DepthsService extends Streamed {
 
     public loadFrom(other: Segment[]): void {
         this.plan.loadFrom(other);
+        this.fixDepths();
         this.depthsReloaded();
     }
 
@@ -154,7 +156,8 @@ export class DepthsService extends Streamed {
     }
 
     public fixDepths(): void {
-        this.plan.fixDepths();
+        const options = this.optionsService.getOptions();
+        this.plan.fixDepths(options.descentSpeed, options.ascentSpeed50perc);
     }
 
     private assignDepth(newDepth: number): void {
@@ -189,7 +192,7 @@ export class DepthsService extends Streamed {
             converted.push(level);
         });
 
-        this._levels = converted;
+        this.definedLevels = converted;
     }
 
     private depthsReloaded(): void {

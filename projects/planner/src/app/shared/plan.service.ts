@@ -8,13 +8,14 @@ export class Plan {
     private static readonly defaultDuration = Time.oneMinute * 10;
     // TODO move strategy to Consumption algorithm selection
     public strategy: Strategies = Strategies.ALL;
-    private _segments: Segments = new Segments();
+    private definedSegments: Segment[] = [];
+    private impliedSegments: Segments = new Segments();
 
     constructor() {
     }
 
     public get length(): number {
-        return this._segments.length;
+        return this.impliedSegments.length;
     }
 
     public get minimumSegments(): boolean {
@@ -26,24 +27,24 @@ export class Plan {
     }
 
     public get segments(): Segment[] {
-        return this._segments.items;
+        return this.impliedSegments.items;
     }
 
     public get maxDepth(): number {
-        return this._segments.maxDepth;
+        return this.impliedSegments.maxDepth;
     }
 
     public get startAscentIndex(): number {
-        return this._segments.startAscentIndex;
+        return this.impliedSegments.startAscentIndex;
     }
 
     public get startAscentTime(): number {
-        return this._segments.startAscentTime;
+        return this.impliedSegments.startAscentTime;
     }
 
     /** in minutes */
     public get duration(): number {
-        const seconds = this._segments.duration;
+        const seconds = this.impliedSegments.duration;
         return Time.toMinutes(seconds);
     }
 
@@ -56,31 +57,60 @@ export class Plan {
     }
 
     public setSimple(depth: number, duration: number, tank: Tank, options: Options): void {
-        this.reset(depth, duration, tank, options);
+        this.impliedSegments = PlanFactory.createPlan(depth, duration, tank, options);
+        this.definedSegments = this.impliedSegments.items;
     }
 
     public assignDepth(newDepth: number, tank: Tank, options: Options): void {
-        this._segments = PlanFactory.createPlan(newDepth, this.duration, tank, options);
+        this.impliedSegments = PlanFactory.createPlan(newDepth, this.duration, tank, options);
+        this.definedSegments = this.impliedSegments.items;
     }
 
     public assignDuration(newDuration: number, tank: Tank, options: Options): void {
-        this._segments = PlanFactory.createPlan(this.maxDepth, newDuration, tank, options);
+        this.impliedSegments = PlanFactory.createPlan(this.maxDepth, newDuration, tank, options);
     }
 
     public addSegment(tank: Tank): void {
-        const last = this._segments.last();
-        const created = this._segments.add(last.endDepth, tank.gas, Plan.defaultDuration);
-        created.tank = tank;
+        const last = this.definedSegments[this.definedSegments.length - 1];
+        const newSegment = new Segment(last.startDepth, last.endDepth, tank.gas, Plan.defaultDuration);
+        newSegment.tank = tank;
+        this.definedSegments.push(newSegment);
     }
 
-    public removeSegment(segment: Segment): void {
-        this._segments.remove(segment);
+    public removeSegment(segment: Segment, descentSpeed: number, ascentSpeed: number): void {
+        this.definedSegments = this.definedSegments.filter(s => s !== segment);
+        this.fixDepths(descentSpeed, ascentSpeed);
     }
 
-    public fixDepths(): void {
-        this._segments.fixStartDepths();
+    // consider dirty check?
+    public fixDepths(descentSpeed: number, ascentSpeed: number): void {
+        if (this.definedSegments.length === 0){
+            return;
+        }
+
+        this.impliedSegments.cutDown(this.impliedSegments.length);
+        let lastDepth = 0;
+        let lastSegment = this.definedSegments[0];
+        for (const s of this.definedSegments){
+            if (s.startDepth !== lastDepth){
+                let duration: null|number = null;
+                if(s.startDepth > lastDepth){
+                    duration = (s.startDepth - lastDepth) * 60 / descentSpeed;
+                } else {
+                    duration = (lastDepth - s.startDepth) * 60 / ascentSpeed;
+                }
+                this.impliedSegments.add(s.startDepth, lastSegment.gas, duration);
+                this.impliedSegments.last().tank = lastSegment.tank;
+            }
+
+            this.impliedSegments.add(s.endDepth, s.gas, s.duration);
+
+            lastDepth = s.startDepth;
+            lastSegment = s;
+        }
     }
 
+    // Note: caller must call fixDepths()
     public loadFrom(other: Segment[]): void {
         if (other.length <= 1) {
             return;
@@ -89,18 +119,15 @@ export class Plan {
         // TODO restore Strategy
         // this.strategy = other.strategy;
         // cant use copy, since deserialized objects wouldn't have one.
-        this._segments = Segments.fromCollection(other);
+        this.definedSegments = other.slice();
     }
 
+    // updates all segments to a different tank
     public resetSegments(removed: Tank, replacement: Tank): void {
         this.segments.forEach(segment => {
             if (segment.tank === removed) {
                 segment.tank = replacement;
             }
         });
-    }
-
-    private reset(depth: number, duration: number, tank: Tank, options: Options): void {
-        this._segments = PlanFactory.createPlan(depth, duration, tank, options);
     }
 }
