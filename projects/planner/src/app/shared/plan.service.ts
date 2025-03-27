@@ -78,11 +78,12 @@ export class Plan {
         this._impliedSegments = PlanFactory.createPlan(this.maxDepth, newDuration, tank, options);
     }
 
-    public addSegment(tank: Tank): void {
+    public addSegment(tank: Tank, descentSpeed: number, ascentSpeed: number): void {
         const last = this.definedSegments[this.definedSegments.length - 1];
         const newSegment = new Segment(last.startDepth, last.endDepth, tank.gas, Plan.defaultDuration);
         newSegment.tank = tank;
-        this.definedSegments.push(newSegment);
+        this._definedSegments.push(newSegment);
+        this.fixDepths(descentSpeed, ascentSpeed);
     }
 
     public removeSegment(segment: Segment, descentSpeed: number, ascentSpeed: number): void {
@@ -91,6 +92,7 @@ export class Plan {
     }
 
     // consider dirty check?
+    // fully realizes the implied segments from the declared segments
     public fixDepths(descentSpeed: number, ascentSpeed: number): void {
         if (this.definedSegments.length === 0){
             return;
@@ -108,17 +110,19 @@ export class Plan {
                     duration = Precision.round((lastDepth - s.startDepth) * 60 / ascentSpeed, 0);
                 }
                 this._impliedSegments.add(s.startDepth, lastSegment.gas, duration);
-                // this._impliedSegments.last().tank = lastSegment.tank;
+                this._impliedSegments.last().tank = lastSegment.tank;
             }
 
             this._impliedSegments.add(s.endDepth, s.gas, s.duration - duration);
+            this._impliedSegments.last().tank = s.tank;
 
             lastDepth = s.endDepth;
             lastSegment = s;
         }
+        this._impliedSegments.fixStartDepths();
     }
 
-    // Note: caller must call fixDepths()
+    // this should load an implied plan, so no need to call fixDepths()
     public loadFrom(other: Segment[]): void {
         if (other.length <= 1) {
             return;

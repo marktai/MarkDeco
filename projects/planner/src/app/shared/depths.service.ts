@@ -167,10 +167,11 @@ export class DepthsService extends Streamed {
     }
 
     private addSegmentToPlan(): void {
+        const options = this.optionsService.getOptions();
         const segments = this.plan.segments;
         const lastUsedTank = segments[segments.length - 1].tank;
         const tank = lastUsedTank as Tank;
-        this.plan.addSegment(tank);
+        this.plan.addSegment(tank, options.descentSpeed, options.ascentSpeed50perc);
     }
 
     private apply(): void {

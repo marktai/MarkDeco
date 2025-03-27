@@ -235,7 +235,7 @@ export class BuhlmannAlgorithm {
             let rounded = Precision.ceilDistance(stopDuration, context.decoStopDuration);
             if (context.options.roundRuntimesToMinutes){
                 context.restore(memento);
-                const secondsDeco = (context.runTime + rounded - 1) % 60;
+                const secondsDeco = (context.runTime + rounded - 2) % 60;
                 if (secondsDeco !== 1){
                     rounded += 60 - secondsDeco;
                 }
