@@ -183,7 +183,7 @@ export class DepthsService extends Streamed {
     }
 
     private updateLevels(): void {
-        const segments: Segment[] = this.plan.segments;
+        const segments: Segment[] = this.plan.definedSegments;
         const converted: Level[] = [];
         segments.forEach(segment => {
             const tank = segment.tank as Tank;

@@ -105,6 +105,7 @@ export class DepthsComplexComponent extends Streamed implements OnInit {
     }
 
     public tankLabelFor(index: number): string {
+        console.log(index);
         return this.levelAt(index).tankLabel;
     }
 
