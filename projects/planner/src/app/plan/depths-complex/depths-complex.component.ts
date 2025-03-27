@@ -16,6 +16,7 @@ import { DepthsService } from '../../shared/depths.service';
 
 interface LevelRow {
     duration: FormControl<number>;
+    startDepth: FormControl<number>;
     endDepth: FormControl<number>;
 }
 
@@ -74,6 +75,12 @@ export class DepthsComplexComponent extends Streamed implements OnInit {
 
     private get surfaceInterval(): string | null {
         return this.schedules.selected.surfaceIntervalText;
+    }
+
+    public startDepthItemInvalid(index: number): boolean {
+        const level = this.levelControls.at(index);
+        const startDepth = level.controls.startDepth;
+        return this.inputs.controlInValid(startDepth);
     }
 
     public depthItemInvalid(index: number): boolean {
@@ -158,8 +165,9 @@ export class DepthsComplexComponent extends Streamed implements OnInit {
         const level = this.levelAt(index);
         const levelControl = this.levelControls.at(index);
         const levelValue = levelControl.value;
-        level.duration = Number(levelValue.duration);
+        level.startDepth = Number(levelValue.startDepth);
         level.endDepth = Number(levelValue.endDepth);
+        level.duration = Number(levelValue.duration);
         this.depths.levelChanged();
     }
 
@@ -184,7 +192,8 @@ export class DepthsComplexComponent extends Streamed implements OnInit {
     private createLevelControl(level: Level): FormGroup<LevelRow> {
         return this.fb.group({
             duration: [Precision.round(level.duration, 1), this.validators.duration],
-            endDepth: [Precision.round(level.endDepth, 1), this.validators.depthFromSurface]
+            startDepth: [Precision.round(level.startDepth, 1), this.validators.depthFromSurface],
+            endDepth: [Precision.round(level.endDepth, 1), this.validators.depthFromSurface],
         });
     }
 
