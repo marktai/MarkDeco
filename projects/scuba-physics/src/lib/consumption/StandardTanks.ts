@@ -16,10 +16,10 @@ class TankConstants {
     public static readonly imperialStageWorkPressure = 3000;
 
     /** 15L steel cylinder default single tank cylinder */
-    public static readonly mertricTankSize = 15;
+    public static readonly metricTankSize = 11.1;
 
     /** S80 aluminum 11L cylinder default single tank cylinder */
-    public static readonly metricStageSize = 11.1;
+    public static readonly metricStageSize = 5.8;
 }
 
 
@@ -100,7 +100,7 @@ export class MetricTanks implements StandardTanks {
             },
             {
                 name: 'S40',
-                size: 5.7,
+                size: 5.8,
                 workingPressure: 0,
             },
             {
@@ -118,15 +118,15 @@ export class MetricTanks implements StandardTanks {
 
     public get primary(): TankTemplate {
         return {
-            name: '15 L',
-            size: TankConstants.mertricTankSize,
+            name: '2x11 L',
+            size: 22.2,
             workingPressure: 0,
         };
     }
 
     public get stage(): TankTemplate {
         return {
-            name: 'S80',
+            name: 'S40',
             size: TankConstants.metricStageSize,
             workingPressure: 0,
         };

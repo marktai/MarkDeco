@@ -22,7 +22,7 @@ export class OptionsService {
     private _toxicity = new GasToxicity(this.options);
 
     constructor(private units: UnitConversion, private dispatcher: ReloadDispatcher) {
-        this.options.salinity = Salinity.fresh;
+        this.options.salinity = Salinity.salt;
         this.options.safetyStop = SafetyStop.auto;
         // units rounded default values aren't provided,
         // because there is no real use case where this service
